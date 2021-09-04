@@ -2,10 +2,24 @@ import bottle
 import os
 from model import Model, SeznamReceptov, Recept
 
+def nalozi_uporabnikovo_stanje():
+    uporabnisko_ime = bottle.request.get_cookie("uporabnisko_ime")
+    if uporabnisko_ime:
+        return Model.preberi_datoteko(uporabnisko_ime)
+    else:
+        bottle.redirect("/prijava/")
+
+
+
+def shrani_uporabnikovo_stanje(m):
+    uporabnisko_ime = bottle.request.get_cookie("uporabnisko_ime")
+    m.shrani_datoteko(uporabnisko_ime)
+
+
 
 @bottle.get('/')
 def osnovna_stran():
-    m = nalozi_uporabnikovo_stanje() # dodaj funkcijo za branje modela
+    m = nalozi_uporabnikovo_stanje()
     return bottle.template(
         'osnovna_stran.html',
         stPriljubljenih = m.steviloPriljubljenih(),
@@ -14,6 +28,8 @@ def osnovna_stran():
         seznamZaPrikaz = m.seznamZaPrikaz,
         uporabnisko_ime = bottle.request.get_cookie("uporabnisko_ime"),
     )
+
+
 
 
 @bottle.error(404)
