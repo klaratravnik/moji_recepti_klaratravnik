@@ -1,3 +1,5 @@
+import json
+
 class Model:
     def __init__(self):
         self.seznamiReceptov = []
@@ -24,6 +26,33 @@ class Model:
     def odstraniRecept(self, recept):
         #self.seznamiReceptov[self.VSI_RECEPTI].odstraniRecept(recept)
         self.seznamZaPrikaz.odstraniRecept(recept)
+    
+    def v_slovar(self):
+        return {
+            "seznami": [s.v_slovar() for s in self.seznamiReceptov],
+            "seznam_za_prikaz": self.seznamiReceptov.index(self.seznamZaPrikaz)
+            if self.seznamZaPrikaz
+            else None
+        }
+
+    @staticmethod
+    def iz_slovarja(dict):
+        m = Model()
+        m.seznamiReceptov = [SeznamReceptov.iz_slovarja(dict_s) for dict_s in dict["seznami"]]
+        if dict["seznam_za_prikaz"] is not None:
+            m.seznamZaPrikaz = m.seznamiReceptov[dict["seznam_za_prikaz"]]
+        return m
+
+    def shrani_datoteko(self, ime_dat):
+        with open(ime_dat, "w") as d:
+            dict = self.v_slovar()
+            json.dump(dict, d)
+
+    @staticmethod
+    def preberi_datoteko(ime_dat):
+        with open(ime_dat) as d:
+            dict = json.load(d)
+            return Model.iz_slovarja(dict)
 
 
 class SeznamReceptov:
@@ -36,6 +65,18 @@ class SeznamReceptov:
 
     def odstraniRecept(self, recept):
         self.recepti.remove(recept)
+    
+    def v_slovar(self):
+        return {
+            "ime": self.ime,
+            "recepti": [r.v_slovar() for r in self.recepti]
+        }
+
+    @staticmethod
+    def iz_slovarja(dict):
+        s = SeznamReceptov(dict["ime"])
+        s.recepti = [Recept.iz_slovarja(dict_r) for dict_r in dict["recepti"]]
+        return s
 
 
 class Recept:
@@ -44,3 +85,15 @@ class Recept:
         self.sestavine = sestavine
         self.postopek = postopek
         self.priljubljen = priljubljen
+    
+    def v_slovar(self):
+        return {
+            "ime": self.ime,
+            "sestavine": self.sestavine,
+            "postopek": self.postopek,
+        	"priljubljen": self.priljubljen
+        }
+
+    @staticmethod # Recept.iz_slovarja(s)
+    def iz_slovarja(dict):
+        return Recept(dict["ime"], dict["sestavine"], dict["postopek"], dict["priljubljen"])
