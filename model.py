@@ -27,6 +27,13 @@ class Model:
         #self.seznamiReceptov[self.VSI_RECEPTI].odstraniRecept(recept)
         self.seznamZaPrikaz.odstraniRecept(recept)
     
+    def steviloPriljubljenih(self):
+        return sum([sezn.stPriljubljenih() for sezn in self.seznamiReceptov])
+
+    #def dodajPriljubljenim(self, recept):
+        #self.seznamiReceptov[self.VSI_RECEPTI].(recept)
+        #self.seznamiReceptov[self.PRILJUBLJENI].dodajRecept(recept)
+    
     def v_slovar(self):
         return {
             "seznami": [s.v_slovar() for s in self.seznamiReceptov],
@@ -53,6 +60,18 @@ class Model:
         with open(ime_dat) as d:
             dict = json.load(d)
             return Model.iz_slovarja(dict)
+    
+    def preveri_podatke(self, ime):
+        napake = {}
+        if not ime:
+            napake["ime"] = "Ime mora biti neprazno."
+        for seznam in self.seznamiReceptov:
+            if seznam.ime == ime:
+                napake["ime"] = "Ime je že zasedeno."
+        return napake
+
+
+
 
 
 class SeznamReceptov:
@@ -65,6 +84,13 @@ class SeznamReceptov:
 
     def odstraniRecept(self, recept):
         self.recepti.remove(recept)
+    
+    def stPriljubljenih(self):
+        st = 0
+        for r in self.recepti:
+            if r.priljubljen == True:
+                st += 1
+        return st
     
     def v_slovar(self):
         return {
@@ -79,12 +105,18 @@ class SeznamReceptov:
         return s
 
 
+
+
+
 class Recept:
     def __init__(self, ime, sestavine, postopek, priljubljen):
         self.ime = ime
         self.sestavine = sestavine
         self.postopek = postopek
         self.priljubljen = priljubljen
+    
+    def togglePriljubljenost(self):
+        self.priljubljen = not self.priljubljen
     
     def v_slovar(self):
         return {
