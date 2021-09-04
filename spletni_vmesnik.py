@@ -17,6 +17,51 @@ def shrani_uporabnikovo_stanje(m):
 
 
 
+@bottle.get("/registracija/")
+def registracija_get():
+    return bottle.template("registracija.html", napake={}, polja={}, uporabnisko_ime=None)
+
+
+
+@bottle.post("/registracija/")
+def registracija_post():
+    uporabnisko_ime = bottle.request.forms.getunicode("uporabnisko_ime")
+    if os.path.exists(uporabnisko_ime):
+        napake = {"uporabnisko_ime": "Uporabniško ime že obstaja."}
+        return bottle.template("registracija.html", napake=napake, polja={"uporabnisko_ime": uporabnisko_ime}, uporabnisko_ime=None)
+    else:
+        bottle.response.set_cookie("uporabnisko_ime", uporabnisko_ime, path="/")
+        Model().shrani_datoteko(uporabnisko_ime)
+        bottle.redirect("/")
+
+
+
+@bottle.get("/prijava/")
+def prijava_get():
+    return bottle.template("prijava.html", napake={}, polja={}, uporabnisko_ime=None)
+
+
+
+@bottle.post("/prijava/")
+def prijava_post():
+    uporabnisko_ime = bottle.request.forms.getunicode("uporabnisko_ime")
+    if not os.path.exists(uporabnisko_ime):
+        napake = {"uporabnisko_ime": "Uporabniško ime ne obstaja."}
+        return bottle.template("prijava.html", napake=napake, polja={"uporabnisko_ime": uporabnisko_ime}, uporabnisko_ime=None)
+    else:
+        bottle.response.set_cookie("uporabnisko_ime", uporabnisko_ime, path="/")
+        bottle.redirect("/")
+
+
+
+@bottle.post("/odjava/")
+def odjava_post():
+    bottle.response.delete_cookie("uporabnisko_ime", path="/")
+    print("piškotek uspešno pobrisan")
+    bottle.redirect("/")
+
+
+
 @bottle.get('/')
 def osnovna_stran():
     m = nalozi_uporabnikovo_stanje()
@@ -28,7 +73,6 @@ def osnovna_stran():
         seznamZaPrikaz = m.seznamZaPrikaz,
         uporabnisko_ime = bottle.request.get_cookie("uporabnisko_ime"),
     )
-
 
 
 
