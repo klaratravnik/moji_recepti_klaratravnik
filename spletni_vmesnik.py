@@ -111,6 +111,40 @@ def dodaj_seznam_post():
 
 
 
+@bottle.post("/dodaj-recept/")
+def dodaj_recept():
+    ime = bottle.request.forms.getunicode("ime")
+    sestavine = bottle.request.forms.getunicode("sestavine")
+    postopek = bottle.request.forms.getunicode("postopek")
+    recept = Recept(ime, sestavine, postopek, False)
+    m = nalozi_uporabnikovo_stanje()
+    m.dodajRecept(recept)
+    shrani_uporabnikovo_stanje(m)
+    bottle.redirect("/")
+
+
+
+@bottle.post("/priljubljenost/")
+def priljubljenost():
+    indeks = bottle.request.forms.getunicode("indeks")
+    m = nalozi_uporabnikovo_stanje()
+    recept = m.seznamZaPrikaz.recepti[int(indeks)]
+    recept.togglePriljubljenost()
+    shrani_uporabnikovo_stanje(m)
+    bottle.redirect("/")
+
+
+@bottle.post("/odstrani-recept/")
+def priljubljenost():
+    indeks = bottle.request.forms.getunicode("indeks")
+    m = nalozi_uporabnikovo_stanje()
+    recept = m.seznamZaPrikaz.recepti[int(indeks)]
+    m.odstraniRecept(recept)
+    shrani_uporabnikovo_stanje(m)
+    bottle.redirect("/")
+
+
+
 @bottle.error(404)
 def error_404(error):
     return "Ta stran ne obstaja!"
