@@ -76,6 +76,41 @@ def osnovna_stran():
 
 
 
+@bottle.post("/zamenjaj-seznam-za-prikaz/")
+def zamenjaj_seznam_za_prikaz():
+    print(dict(bottle.request.forms))
+    indeks = bottle.request.forms.getunicode("indeks")
+    m = nalozi_uporabnikovo_stanje()
+    seznam = m.seznamiReceptov[int(indeks)]
+    m.seznamZaPrikaz = seznam
+    shrani_uporabnikovo_stanje(m)
+    bottle.redirect("/")
+
+
+
+@bottle.get("/dodaj-seznam/")
+def dodaj_seznam_get():
+    uporabnisko_ime = bottle.request.get_cookie("uporabnisko_ime")
+    return bottle.template("dodaj_seznam.html", napake={}, polja={}, uporabnisko_ime=uporabnisko_ime)
+
+
+
+@bottle.post("/dodaj-seznam/")
+def dodaj_seznam_post():
+    ime = bottle.request.forms.getunicode("ime")
+    polja = {"ime": ime}
+    m = nalozi_uporabnikovo_stanje()
+    napake = m.preveri_podatke(ime)
+    if napake:
+        return bottle.template("dodaj_seznam.html", napake=napake, polja=polja)
+    else:
+        seznam = SeznamReceptov(ime)
+        m.dodajSeznam(seznam)
+        shrani_uporabnikovo_stanje(m)
+        bottle.redirect("/")
+
+
+
 @bottle.error(404)
 def error_404(error):
     return "Ta stran ne obstaja!"
